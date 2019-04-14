@@ -1,7 +1,9 @@
+
 from __future__ import print_function
 from nltk.chat.util import Chat, reflections
 from tkinter import *
 import tkinter
+import time
 import random
 from gtts import gTTS
 import speech_recognition as sr
@@ -14,9 +16,23 @@ from weather import Weather
 import re
 import random
 from six.moves import input
-
 class Chat(object):
-    def __init__(self,pairs, reflections={}):
+    def __init__(self, pairs, reflections={}):
+        """
+        Initialize the chatbot.  Pairs is a list of patterns and responses.  Each
+        pattern is a regular expression matching the user's statement or question,
+        e.g. r'I like (.*)'.  For each such pattern a list of possible responses
+        is given, e.g. ['Why do you like %1', 'Did you ever dislike %1'].  Material
+        which is matched by parenthesized sections of the patterns (e.g. .*) is mapped to
+        the numbered positions in the responses, e.g. %1.
+
+        :type pairs: list of tuple
+        :param pairs: The patterns and responses
+        :type reflections: dict
+        :param reflections: A mapping between first and second person expressions
+        :rtype: None
+        """
+
         self._pairs = [(re.compile(x, re.IGNORECASE), y) for (x, y) in pairs]
         self._reflections = reflections
         self._regex = self._compile_reflections()
@@ -79,22 +95,6 @@ class Chat(object):
                     resp = resp[:-2] + '?'
                 return resp
 
-
-    # Hold a conversation with a chatbot
-
-    def converse(self, quit="quit"):
-        user_input = ""
-        while user_input != quit:
-            user_input = quit
-            try:
-                user_input = input(">")
-            except EOFError:
-                print(user_input)
-            if user_input:
-                while user_input[-1] in "!.":
-                    user_input = user_input[:-1]
-                print(self.respond(user_input))
-
     def myCommand(self):
         r=sr.Recognizer()
 
@@ -107,7 +107,9 @@ class Chat(object):
             msg_list.insert(tkinter.END,"                                                       "+command)
             msg_list.see(tkinter.END)
         except sr.UnknownValueError:
-            self.talkToMe('Sorry i did not get this')
+            self.talkToMe("Google Speech could not understand audio")
+        except sr.RequestError as e:
+            self.talkToMe("Could not request results from Google Speech Recognition service; {0}".format(e))
         self.talkToMe(self.respond(command))
 
     def talkToMe(self,audio):
@@ -137,43 +139,37 @@ def call():
     "me": "you",
     }
     pairs = (
-    (r'ok bye',
+    (r'ok bye|bye|i got to go|ok take care',
      ( "Thank you. It was good talking to you.",
        "Good-bye.")),
  
-    (r'Who are you(.*)',
-     ( "My name is Pyexa.",
-       "I'm Pyexa.")),
+    (r'ok(.*)',
+     ( "My name is Zara yours assistant.",
+       "I'm Zara yours assistant.")),
  
-    (r'What is your name(.*)',
-     ( "My name is Alpha.",
-       "I'm Alpha.")),
+    (r'What is your name(.*)|Who are you(.*)',
+     ( "My name is Zara!.",
+       "I'm Zara!")),
  
     (r'What do you do(.*)',
      ( "I speak my mind out.",
        "I chat.",
        "I like making friends.")),
  
-    (r'Then(.*)',
+    (r'whats up(.*)',
      ( "Nothing special. You tell me.",
-       "What else?",
        "Nothing from me. What about you?")),
  
-    (r'How are you(.*)',
+    (r'How are you(.*)|How are you doing',
      ( "I am fine. Thank You. How are you?",
        "I am fine. How about you?",
        "Fine. Thank You. How about you?")),
  
-    (r'Hi(.*)',
+    (r'Hi(.*)|Hello(.*)',
      ( "Hi!!! What is your name?",
        "Hello.",
        "Hi. Great to meet you.")),
- 
-    (r'My name is (.*)',
-     ( "Hi %1!!!",
-       "Hello %1.",
-       "Hi %1. Great to meet you.")),
- 
+
     (r'You tell me(.*)',
      ( "What?",
        "Tell me about yourself.",
@@ -210,9 +206,9 @@ def call():
        "I am not sure.",
        "I do not know the answer to your question")),
  
-    (r'(.*) (happy|cheerful|glad|good)',
-     ( "%1 %2",
-       "%1 %2")),
+    (r'(.*) (time is it|time)',
+     ( "the time is",
+       "here it is")),
  
     (r'(.*)',
      ( "Alright.",
@@ -225,7 +221,7 @@ def call():
 
 top = tkinter.Tk()
 top.configure(background="white")
-top.title("Lyra!")
+top.title("Zara!")
 messages_frame = tkinter.Frame(top)
 scrollbar = tkinter.Scrollbar(messages_frame)  # To see through previous messages.
 # this will contain the messages.
