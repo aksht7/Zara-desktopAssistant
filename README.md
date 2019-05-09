@@ -1,6 +1,6 @@
 # Zara-desktopAssistant
 ## Created and tested on LINUX.
-An attempt to make a simple, personal voice desktop assistant with designed GUI.The project is based on voice recognition and NLTK.
+An attempt to make a simple, personal voice desktop assistant with designed GUI written in Python which uses google's speech-to-text library to process voice input.The project is based on voice recognition and NLTK.
 You can communicate with Zara.It performs every task you say. Various reflections and pairs are defined and regular expressions are further compiled for the response. 
 ## Some of the tasks are :
      - Takes you to the specific URL on the Web.
