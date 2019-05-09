@@ -3,6 +3,7 @@
 An attempt to make a simple, personal voice desktop assistant with GUI.The project is based on voice recognition and NLTK.
 You can communicate with Zara.It performs every task you say.
 ## Some of the tasks are :
+     - Takes you to the specific URL on the Web.
      - Searches your queries in Web.
      - Plays music.
      - Tells time and date.
