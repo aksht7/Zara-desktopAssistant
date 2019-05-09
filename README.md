@@ -1,7 +1,7 @@
 # Zara-desktopAssistant
 ## Created and tested on LINUX.
 An attempt to make a simple, personal voice desktop assistant with GUI.The project is based on voice recognition and NLTK.
-You can communicate with Zara.It performs every task you say.
+You can communicate with Zara.It performs every task you say. Various reflections and pairs are defined and regular expressions are further compiled for the response. 
 ## Some of the tasks are :
      - Takes you to the specific URL on the Web.
      - Searches your queries in Web.
