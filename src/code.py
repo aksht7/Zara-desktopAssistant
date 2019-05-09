@@ -1,8 +1,8 @@
-
 from __future__ import print_function
 from nltk.chat.util import Chat, reflections
 from tkinter import *
 import tkinter
+from time import ctime
 import time
 import random
 from gtts import gTTS
@@ -14,24 +14,10 @@ from PIL import ImageTk, Image
 import requests
 from weather import Weather
 import re
-import random
 from six.moves import input
+from googlesearch import search
 class Chat(object):
     def __init__(self, pairs, reflections={}):
-        """
-        Initialize the chatbot.  Pairs is a list of patterns and responses.  Each
-        pattern is a regular expression matching the user's statement or question,
-        e.g. r'I like (.*)'.  For each such pattern a list of possible responses
-        is given, e.g. ['Why do you like %1', 'Did you ever dislike %1'].  Material
-        which is matched by parenthesized sections of the patterns (e.g. .*) is mapped to
-        the numbered positions in the responses, e.g. %1.
-
-        :type pairs: list of tuple
-        :param pairs: The patterns and responses
-        :type reflections: dict
-        :param reflections: A mapping between first and second person expressions
-        :rtype: None
-        """
 
         self._pairs = [(re.compile(x, re.IGNORECASE), y) for (x, y) in pairs]
         self._reflections = reflections
@@ -44,14 +30,6 @@ class Chat(object):
         )
 
     def _substitute(self, str):
-        """
-        Substitute words in the string, according to the specified reflections,
-        e.g. "I'm" -> "you are"
-
-        :type str: str
-        :param str: The string to be mapped
-        :rtype: str
-        """
 
         return self._regex.sub(
             lambda mo: self._reflections[mo.string[mo.start() : mo.end()]], str.lower()
@@ -65,30 +43,22 @@ class Chat(object):
                 response[:pos]
                 + self._substitute(match.group(num))
                 + response[pos + 2 :]
-            )
+            ) 
             pos = response.find('%')
         return response
 
 
     def respond(self, str):
-        """
-        Generate a response to the user input.
 
-        :type str: str
-        :param str: The string to be mapped
-        :rtype: str
-        """
-
-        # check each pattern
+        
         for (pattern, response) in self._pairs:
             match = pattern.match(str)
-
-            # did the pattern match?
+            
             if match:
-                resp = random.choice(response)  # pick a random response
-                resp = self._wildcards(resp, match)  # process wildcards
+                resp = random.choice(response)  
+                resp = self._wildcards(resp, match) 
 
-                # fix munged punctuation at the end
+                
                 if resp[-2:] == '?.':
                     resp = resp[:-2] + '.'
                 if resp[-2:] == '??':
@@ -104,7 +74,8 @@ class Chat(object):
             audio=r.listen(source)
         try:
             command=r.recognize_google(audio)
-            msg_list.insert(tkinter.END,"                                                       "+command)
+            msg_list.insert(tkinter.END,"")
+            msg_list.insert(tkinter.END,"   You : "+command)
             msg_list.see(tkinter.END)
         except sr.UnknownValueError:
             self.talkToMe("Google Speech could not understand audio")
@@ -113,11 +84,33 @@ class Chat(object):
         self.talkToMe(self.respond(command))
 
     def talkToMe(self,audio):
-        msg_list.insert(tkinter.END,"   "+audio)
+        if('birthday' in audio or 'time' in audio or 'www' in audio):
+            audio=self.operate(audio)
+        msg_list.insert(tkinter.END,"")
+        msg_list.insert(tkinter.END,"   Zara : "+audio)
         msg_list.see(tkinter.END)
         tts=gTTS(text=audio, lang='en')
         tts.save('audio.mp3')
         os.system('mpg123 audio.mp3')
+    
+    def operate(self,msg):
+        if('time' in msg):
+            return (ctime())
+        elif('birthday' in msg):
+            os.system(random.choice(['mpg123 Birthday1.mp3','mpg123 Birthday2.mp3']))
+            return 'Happyyyy Birthdayyyy to you.'
+        elif('terminal' in msg):
+            os.system("gnome-terminal -e 'sudo apt-get update'")
+            return 'Sure'
+        else:
+            chrome_path='/usr/bin/google-chrome'
+            msg=msg[3:]
+            for j in search(msg, tld="co.in", num=1,stop=1):
+                msg=j
+            webbrowser.get(chrome_path).open(msg,new=2)
+            return random.choice(['let me take you to the web','i can search the web for you'])
+
+
 
 def call():
     reflections = {
@@ -141,22 +134,22 @@ def call():
     pairs = (
     (r'ok bye|bye|i got to go|ok take care',
      ( "Thank you. It was good talking to you.",
-       "Good-bye.")),
+       "See you later alligator. Good-bye.")),
  
-    (r'ok(.*)',
-     ( "My name is Zara yours assistant.",
-       "I'm Zara yours assistant.")),
+    (r'my name is(.*)|am(.*)',
+     ( "Hello %1.Nice to meet you",
+       "Hi %1.")),
  
     (r'What is your name(.*)|Who are you(.*)',
      ( "My name is Zara!.",
        "I'm Zara!")),
  
-    (r'What do you do(.*)',
-     ( "I speak my mind out.",
-       "I chat.",
-       "I like making friends.")),
+    (r'What do you do(.*)|(.*)what can you do(.*)|(.*)what things can you do(.*)',
+     ( "I speak my mind out. i can help you searching about things",
+       "There\'s lots of thing i can help you with",
+       "I like making friends. i can chat with you")),
  
-    (r'whats up(.*)',
+    (r'what\'s up(.*)',
      ( "Nothing special. You tell me.",
        "Nothing from me. What about you?")),
  
@@ -165,55 +158,32 @@ def call():
        "I am fine. How about you?",
        "Fine. Thank You. How about you?")),
  
-    (r'Hi(.*)|Hello(.*)',
+    (r'Hi(.*)|Hello(.*)|ok Zara(.*)',
      ( "Hi!!! What is your name?",
        "Hello.",
        "Hi. Great to meet you.")),
 
-    (r'You tell me(.*)',
-     ( "What?",
-       "Tell me about yourself.",
-       "WHat do you do?")),
- 
-    (r'What else(.*)',
-     ( "Nothing special. You tell me.",
-       "Nothing from me. What about you?")),
- 
-    (r'I need (.*)',
-     ( "Why do you need %1?",
-       "Why?",
-       "Are you sure?")),
+    (r'(.*) am fine(.*)',
+     ( "Thats great!",
+       "Awesome!!",
+       "Superb!")),
  
     (r'How (.*)',
      ( "I am not aure.",
        "I'm not sure. What do you think?",
        "Sorry, I don't know.")),
  
-    (r'Hello(.*)',
-     ( "Hi... How are you today?",
-       "Hello, How are you?")),
+    (r'What technology are you(.*)|In which technology are you(.*)|which technology do you(.*)|(.*)you designed',
+     ( "I'm an assistant designed in python using natural language tool kit",
+       "I'm Zara designed in python using natural language tool kit")),
  
-    (r'Yes',
-     ( "You seem certain.",
-       "Alright")),
- 
-    (r'My (.*)',
-     ( "I see, your %1.",
-       "Oh ok.")),
- 
-    (r'(.*)\?',
-     ( "Why do you ask that?",
-       "I am not sure.",
-       "I do not know the answer to your question")),
- 
-    (r'(.*) (time is it|time)',
-     ( "the time is",
-       "here it is")),
+    (r'(.*) (time is it|time|birhtday)',
+     ( "%1 %2",
+       "%1 %2")),
  
     (r'(.*)',
-     ( "Alright.",
-       "I see.",
-       "Very interesting."))
+     ( "www %1",
+       "www %1"))
     )
     chat=Chat(pairs,reflections)
     chat.myCommand()
@@ -223,14 +193,12 @@ top = tkinter.Tk()
 top.configure(background="white")
 top.title("Zara!")
 messages_frame = tkinter.Frame(top)
-scrollbar = tkinter.Scrollbar(messages_frame)  # To see through previous messages.
-# this will contain the messages.
+scrollbar = tkinter.Scrollbar(messages_frame) 
 msg_list = tkinter.Listbox(messages_frame,highlightthickness = 0, bd = 0, height=25, width=50, yscrollcommand=scrollbar.set)
 scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
 msg_list.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
 msg_list.pack()
 messages_frame.pack()
-
 img1=ImageTk.PhotoImage(Image.open("voice.png"))
 send_button = tkinter.Button(top,highlightthickness = 0, bd = 0,bg="white",image=img1, text="Send",command=call)
 send_button.pack()
